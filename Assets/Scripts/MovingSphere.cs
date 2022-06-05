@@ -4,15 +4,49 @@ using UnityEngine;
 
 public class MovingSphere : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField, Range(0f, 100f)]
+    private float maxSpeed = 10f;
+    
+    [SerializeField, Range(0f, 100f)]
+    private float maxAcceleration = 10f;
+    
+    [SerializeField]
+    Rect allowedArea = new Rect(-4.5f, -4.5f, 9f, 9f);
+    
+    private void Update()
     {
+        Vector2 playerInput;
         
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        playerInput.x = Input.GetAxis("Horizontal");
+        playerInput.y = Input.GetAxis("Vertical");
+        playerInput = Vector2.ClampMagnitude(playerInput, 1f);
+        var acceleration = new Vector3(playerInput.x, 0f, playerInput.y) * maxSpeed;
+        Vector3 desiredVelocity = new Vector3(playerInput.x, 0f, playerInput.y) * maxSpeed;
+        Vector3 velocity = new Vector3(playerInput.x, 0f, playerInput.y) * maxSpeed;
+        float maxSpeedChange = maxAcceleration * Time.deltaTime;
+        velocity.x = Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
+        velocity.z = Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
+       
+        var displacement = velocity * Time.deltaTime;
+        Vector3 newPosition = transform.position + displacement;
+        if (newPosition.x < allowedArea.xMin)
+        {
+            newPosition.x = allowedArea.xMin;
+            velocity.x = -velocity.x;
+        } else if (newPosition.x > allowedArea.xMax)
+        {
+            newPosition.x = allowedArea.xMax;
+            velocity.x = -velocity.x;
+        } 
+        if (newPosition.z < allowedArea.yMin)
+        {
+            newPosition.z = allowedArea.yMin;
+            velocity.z = -velocity.z;
+        } else if (newPosition.z > allowedArea.yMax)
+        {
+            newPosition.z = allowedArea.yMax;
+            velocity.z = -velocity.z;
+        }
+        transform.localPosition = newPosition;
     }
 }
